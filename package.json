@@ -1,0 +1,11 @@
+{
+  "name": "location-context-tool",
+  "version": "1.0.0",
+  "description": "Herramienta en Node.js que recibe un ZIP de EE.UU. y devuelve un JSON enriquecido (ubicacion, clima, calidad del aire, outdoor_score) para que un agente de IA lo consuma.",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "license": "MIT"
+}

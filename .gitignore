@@ -1,0 +1,16 @@
+# Dependencias
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Variables de entorno
+.env
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Documento confidencial interno de la prueba (no publicar)
+docs/
