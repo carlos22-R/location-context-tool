@@ -47,6 +47,30 @@ Todas son gratuitas y no requieren API key.
 | [Open-Meteo](https://open-meteo.com) | Clima actual y calidad del aire por coordenadas (dos endpoints, en paralelo) |
 | [ip-api.com](http://ip-api.com) | Fallback: ubicación por IP si el ZIP falla |
 
+## Servidor HTTP (plus)
+
+Además del CLI, el proyecto se puede exponer como servidor HTTP con el módulo
+`http` **nativo** de Node (sin dependencias). Reutiliza la misma lógica que el
+CLI (`src/getContext.js`), así que la salida es idéntica.
+
+```bash
+node server.js
+```
+
+```
+Servidor escuchando en http://localhost:3000
+```
+
+Endpoint disponible (probable con navegador, curl o Postman):
+
+```bash
+curl "http://localhost:3000/context?zip=80203"   # 200 + JSON de contexto
+curl "http://localhost:3000/context"              # 200 + fallback por IP
+curl "http://localhost:3000/otra"                 # 404 + objeto de error
+```
+
+El puerto es configurable con la variable de entorno `PORT` (por defecto `3000`).
+
 ## Comportamiento: origen de la ubicación y fallback
 
 El campo `input.source` indica de dónde salió la ubicación:
@@ -76,8 +100,10 @@ Ejemplo de objeto de error:
 ## Estructura del proyecto
 
 ```
-index.js                     Orquestador: CLI, fallback y Promise.all
+index.js                     Entrada CLI
+server.js                    Servidor HTTP (plus)
 src/
+├── getContext.js            "Cerebro": orquestación reutilizable (CLI + HTTP)
 ├── services/                Una API externa por archivo
 │   ├── zippopotam.js         ZIP → ubicación
 │   ├── openMeteo.js          Clima + calidad del aire
