@@ -51,3 +51,26 @@ export function buildErrorObject(zip, message) {
     input: { zip: zip ?? null, source: null },
   };
 }
+
+// --- Soporte para multiples ZIPs (plus) ---
+
+// Tope de ZIPs por llamada. Defensa contra abuso y contra los rate limits de
+// las APIs (cada ZIP dispara 3 peticiones).
+export const MAX_ZIPS = 10;
+
+// Limpia una lista de ZIPs crudos: quita espacios, descarta vacios y ELIMINA
+// duplicados (dedupe), para no repetir llamadas por el mismo ZIP.
+export function normalizeZips(rawZips) {
+  const limpios = rawZips.map((z) => z.trim()).filter(Boolean);
+  return [...new Set(limpios)];
+}
+
+// Version de getContext que NUNCA lanza: devuelve el contexto o, si falla, un
+// objeto de error. Asi un ZIP malo no tumba al resto del lote (Promise.all).
+export async function safeGetContext(zip) {
+  try {
+    return await getContext(zip);
+  } catch (err) {
+    return buildErrorObject(zip, err.message);
+  }
+}

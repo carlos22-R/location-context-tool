@@ -8,7 +8,13 @@
 //   curl "http://localhost:3000/context?zip=80203"
 
 import http from "node:http";
-import { getContext, buildErrorObject } from "./src/getContext.js";
+import {
+  getContext,
+  safeGetContext,
+  buildErrorObject,
+  normalizeZips,
+  MAX_ZIPS,
+} from "./src/getContext.js";
 
 const PORT = process.env.PORT || 3000;
 
@@ -18,10 +24,30 @@ const server = http.createServer(async (req, res) => {
   // Parseamos la URL para separar la ruta de los query params (?zip=...).
   const url = new URL(req.url, `http://${req.headers.host}`);
 
-  // Unica ruta soportada: GET /context
+  // Unica ruta soportada: GET /context?zip=80203  (o varios: ?zip=80203,10001)
   if (req.method === "GET" && url.pathname === "/context") {
-    const zip = url.searchParams.get("zip") ?? undefined;
+    // El parametro zip puede traer varios separados por coma. Limpiar + dedupe.
+    const zipParam = url.searchParams.get("zip");
+    const zips = normalizeZips(zipParam ? zipParam.split(",") : []);
 
+    // Tope de ZIPs -> 400.
+    if (zips.length > MAX_ZIPS) {
+      const msg = `Maximo ${MAX_ZIPS} ZIPs por llamada.`;
+      res.writeHead(400, JSON_HEADERS);
+      res.end(JSON.stringify(buildErrorObject(null, msg), null, 2));
+      return;
+    }
+
+    // Varios ZIPs -> array de contextos (en paralelo, a prueba de fallos).
+    if (zips.length > 1) {
+      const contexts = await Promise.all(zips.map(safeGetContext));
+      res.writeHead(200, JSON_HEADERS);
+      res.end(JSON.stringify(contexts, null, 2));
+      return;
+    }
+
+    // Un solo ZIP (o ninguno -> fallback por IP) -> objeto.
+    const zip = zips[0]; // undefined si no se paso ninguno
     try {
       const context = await getContext(zip);
       res.writeHead(200, JSON_HEADERS);

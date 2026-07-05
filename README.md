@@ -20,11 +20,18 @@ npm install
 ## Uso
 
 ```bash
-node index.js 80203
+node index.js 80203                  # un ZIP  -> objeto
+node index.js 80203 10001 90210      # varios  -> array de contextos
+node index.js                        # sin ZIP -> fallback por IP
 ```
 
-Devuelve un JSON con esta estructura (valores ilustrativos; los datos de clima
-y aire cambian en tiempo real):
+Con varios ZIPs se procesan **en paralelo**; si uno falla, no afecta a los demás
+(cada elemento trae su contexto o su propio objeto de error). Se eliminan ZIPs
+duplicados y hay un tope de **10 ZIPs por llamada** (protege los rate limits de
+las APIs).
+
+Con un solo ZIP devuelve un JSON con esta estructura (valores ilustrativos; los
+datos de clima y aire cambian en tiempo real):
 
 ```json
 {
@@ -64,12 +71,15 @@ Servidor escuchando en http://localhost:3000
 Endpoint disponible (probable con navegador, curl o Postman):
 
 ```bash
-curl "http://localhost:3000/context?zip=80203"   # 200 + JSON de contexto
-curl "http://localhost:3000/context"              # 200 + fallback por IP
-curl "http://localhost:3000/otra"                 # 404 + objeto de error
+curl "http://localhost:3000/context?zip=80203"          # 200 + objeto de contexto
+curl "http://localhost:3000/context?zip=80203,10001"     # 200 + array de contextos
+curl "http://localhost:3000/context"                     # 200 + fallback por IP
+curl "http://localhost:3000/otra"                        # 404 + objeto de error
 ```
 
-El puerto es configurable con la variable de entorno `PORT` (por defecto `3000`).
+Varios ZIPs se pasan separados por coma. Aplica el mismo tope de 10 ZIPs (si se
+excede responde `400`). El puerto es configurable con la variable de entorno
+`PORT` (por defecto `3000`).
 
 ## Comportamiento: origen de la ubicación y fallback
 
