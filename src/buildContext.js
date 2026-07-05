@@ -11,6 +11,7 @@
 
 import { mapCondition } from "./logic/condition.js";
 import { calculateOutdoorScore } from "./logic/outdoorScore.js";
+import { buildAgentContext } from "./logic/agentContext.js";
 
 export function buildContext({ input, location, weather, airQuality }) {
   // Traducimos el weathercode WMO (crudo) a texto legible con NUESTRA logica.
@@ -36,11 +37,4 @@ export function buildContext({ input, location, weather, airQuality }) {
     outdoor_score, // 1..10 (nuestra logica)
     agent_context: buildAgentContext({ location, weather, condition, airQuality, outdoor_score }),
   };
-}
-
-// Genera el texto natural listo para que un agente/bot lo consuma.
-// STUB TEMPORAL: se completara junto con la logica final (usa condition y
-// outdoor_score, que aun son placeholders).
-function buildAgentContext({ location, weather, condition, airQuality, outdoor_score }) {
-  return "(pendiente)";
 }
