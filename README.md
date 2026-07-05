@@ -14,7 +14,8 @@ aire y un `outdoor_score`), listo para que un agente de IA o bot lo consuma.
 npm install
 ```
 
-> No hay dependencias externas todavía; el comando queda documentado por convención.
+> El proyecto no tiene dependencias externas (usa solo módulos nativos de Node),
+> así que `npm install` no instala nada. El comando se incluye por convención.
 
 ## Uso
 
@@ -22,26 +23,83 @@ npm install
 node index.js 80203
 ```
 
-Devuelve un JSON con la estructura:
+Devuelve un JSON con esta estructura (valores ilustrativos; los datos de clima
+y aire cambian en tiempo real):
 
 ```json
 {
   "input":       { "zip": "80203", "source": "zip" },
-  "location":    { "city": "Denver", "state": "Colorado", "country": "US", "lat": 39.7392, "lon": -104.9903 },
+  "location":    { "city": "Denver", "state": "Colorado", "country": "US", "lat": 39.7313, "lon": -104.9811 },
   "weather":     { "temperature_c": 14.5, "windspeed_kmh": 18.2, "condition": "Partly cloudy" },
   "air_quality": { "aqi_us": 38, "level": "Good", "dominant_pollutant": "pm2_5" },
   "outdoor_score": 7,
-  "agent_context": "Estás en Denver, CO. Temperatura de 14°C, condiciones aptas para salir."
+  "agent_context": "Estás en Denver, Colorado. La temperatura es de 15°C con cielo parcialmente nublado. La calidad del aire es Good. Puntuación para actividades al aire libre: 7/10 — buenas condiciones para salir."
 }
 ```
 
 ## APIs utilizadas
 
+Todas son gratuitas y no requieren API key.
+
 | API | Uso |
 |-----|-----|
 | [zippopotam.us](https://api.zippopotam.us) | ZIP → ciudad, estado, país, coordenadas |
-| [Open-Meteo](https://open-meteo.com) | Clima actual y calidad del aire por coordenadas |
+| [Open-Meteo](https://open-meteo.com) | Clima actual y calidad del aire por coordenadas (dos endpoints, en paralelo) |
 | [ip-api.com](http://ip-api.com) | Fallback: ubicación por IP si el ZIP falla |
+
+## Comportamiento: origen de la ubicación y fallback
+
+El campo `input.source` indica de dónde salió la ubicación:
+
+| Situación | `source` | Comportamiento |
+|-----------|----------|----------------|
+| ZIP válido | `"zip"` | Se resuelve con zippopotam.us |
+| ZIP inválido o llamada fallida | `"ip_fallback"` | Cae automáticamente a ip-api.com (ubicación por IP) |
+| Sin ZIP (`node index.js`) | `"ip_fallback"` | Va directo al fallback por IP |
+| Todas las fuentes fallan | — | Devuelve un objeto de error estructurado (no crashea) |
+
+Ejemplo de objeto de error:
+
+```json
+{
+  "error": true,
+  "message": "ip-api no pudo resolver la ubicacion: ...",
+  "input": { "zip": null, "source": null }
+}
+```
+
+> **Nota sobre el fallback por IP:** detecta la ubicación de **quien ejecuta el
+> script** (su IP pública). Si corres esto fuera de EE.UU., el fallback devolverá
+> tu país real, no una ubicación estadounidense. Es el comportamiento esperado
+> (el requisito pide detectar al cliente automáticamente).
+
+## Estructura del proyecto
+
+```
+index.js                     Orquestador: CLI, fallback y Promise.all
+src/
+├── services/                Una API externa por archivo
+│   ├── zippopotam.js         ZIP → ubicación
+│   ├── openMeteo.js          Clima + calidad del aire
+│   └── ipApi.js              Fallback por IP
+├── logic/                   Lógica propia (diseñada por nosotros)
+│   ├── condition.js          weathercode WMO → categoría
+│   ├── outdoorScore.js       Score 1–10
+│   └── agentContext.js       Texto natural para el bot
+├── constants/
+│   └── aqiLevels.js          Tabla oficial EPA del US AQI
+└── buildContext.js          Ensambla el JSON final
+```
+
+Cada servicio y cada pieza de lógica tiene un bloque de prueba ejecutable de
+forma aislada, por ejemplo:
+
+```bash
+node src/services/zippopotam.js 80203      # prueba solo la resolución de ZIP
+node src/services/openMeteo.js 39.73 -104.98
+node src/logic/condition.js                # muestra el mapeo de todos los códigos
+node src/logic/outdoorScore.js             # muestra el score en varios escenarios
+```
 
 ## Lógica propia
 
