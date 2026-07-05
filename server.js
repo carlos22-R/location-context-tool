@@ -12,6 +12,7 @@ import {
   getContext,
   safeGetContext,
   buildErrorObject,
+  friendlyErrorMessage,
   normalizeZips,
   MAX_ZIPS,
 } from "./src/getContext.js";
@@ -55,7 +56,7 @@ const server = http.createServer(async (req, res) => {
     } catch (err) {
       // Si todo fallo, respondemos el objeto de error estructurado con 500.
       res.writeHead(500, JSON_HEADERS);
-      res.end(JSON.stringify(buildErrorObject(zip, err.message), null, 2));
+      res.end(JSON.stringify(buildErrorObject(zip, friendlyErrorMessage(err)), null, 2));
     }
     return;
   }

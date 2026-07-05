@@ -43,6 +43,15 @@ export async function getContext(zip) {
   return buildContext({ input, location, weather, airQuality });
 }
 
+// Traduce errores tecnicos conocidos a un mensaje claro para el usuario.
+// (fetch nativo lanza "fetch failed" ante cualquier fallo de red.)
+export function friendlyErrorMessage(err) {
+  if (err.message === "fetch failed") {
+    return "No se pudo conectar con los servicios externos. Verifica tu conexion a internet e intenta de nuevo.";
+  }
+  return err.message;
+}
+
 // Objeto de error ESTRUCTURADO, compartido por el CLI y el servidor.
 export function buildErrorObject(zip, message) {
   return {
@@ -71,6 +80,6 @@ export async function safeGetContext(zip) {
   try {
     return await getContext(zip);
   } catch (err) {
-    return buildErrorObject(zip, err.message);
+    return buildErrorObject(zip, friendlyErrorMessage(err));
   }
 }

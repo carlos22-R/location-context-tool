@@ -47,7 +47,7 @@ export async function getLocationByIp() {
 //   node src/services/ipApi.js
 // Detectara TU ubicacion real por IP.
 // ---------------------------------------------------------------------------
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   console.log("Probando getLocationByIp() (detecta tu IP)...\n");
   getLocationByIp()
     .then((location) => console.log(JSON.stringify(location, null, 2)))

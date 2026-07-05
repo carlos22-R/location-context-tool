@@ -95,7 +95,7 @@ function getDominantPollutant(current) {
 // BLOQUE DE PRUEBA (solo si ejecutas este archivo directamente):
 //   node src/services/openMeteo.js 39.7313 -104.9811
 // ---------------------------------------------------------------------------
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const lat = process.argv[2] || "39.7313";
   const lon = process.argv[3] || "-104.9811";
   console.log(`Probando con lat=${lat}, lon=${lon}...\n`);

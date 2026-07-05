@@ -84,7 +84,7 @@ export function calculateOutdoorScore({ temperature_c, windspeed_kmh, condition,
 // BLOQUE DE PRUEBA (solo si ejecutas este archivo directamente):
 //   node src/logic/outdoorScore.js
 // ---------------------------------------------------------------------------
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const casos = [
     { nombre: "Dia perfecto", temperature_c: 21, windspeed_kmh: 5, condition: "Clear", aqi_us: 20 },
     { nombre: "Denver real", temperature_c: 26, windspeed_kmh: 5, condition: "Clear", aqi_us: 53 },

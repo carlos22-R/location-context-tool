@@ -11,6 +11,7 @@ import {
   getContext,
   safeGetContext,
   buildErrorObject,
+  friendlyErrorMessage,
   normalizeZips,
   MAX_ZIPS,
 } from "./src/getContext.js";
@@ -40,7 +41,7 @@ async function main() {
     console.log(JSON.stringify(context, null, 2));
   } catch (err) {
     // Si todo fallo, objeto de error estructurado, nunca un crash.
-    console.log(JSON.stringify(buildErrorObject(zip, err.message), null, 2));
+    console.log(JSON.stringify(buildErrorObject(zip, friendlyErrorMessage(err)), null, 2));
     process.exitCode = 1;
   }
 }

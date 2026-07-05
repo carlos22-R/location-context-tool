@@ -48,7 +48,7 @@ export async function getLocationByZip(zip) {
 //   node src/services/zippopotam.js 80203
 // No se ejecuta cuando el archivo es importado por el orquestador.
 // ---------------------------------------------------------------------------
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const zip = process.argv[2] || "80203";
   console.log(`Probando getLocationByZip("${zip}")...\n`);
   getLocationByZip(zip)
